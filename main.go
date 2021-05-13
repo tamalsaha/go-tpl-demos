@@ -48,6 +48,9 @@ func main() {
 			{
 				Inner: Inner{A: "123"},
 			},
+			{
+				Inner: Inner{A: "456"},
+			},
 		},
 	}
 
@@ -66,6 +69,10 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		m_c1, err = m_c1.AddParseTree(tt.Name(), tt.Tree)
+		if err != nil {
+			panic(err)
+		}
 	}
 	m_c1, err = m_c1.Parse(content)
 	if err != nil {
@@ -75,6 +82,10 @@ func main() {
 	m_c2 := template.New("")
 	for _, tt := range tpl_c2.Templates() {
 		m_c2, err = m_c2.AddParseTree("c2_"+tt.Name(), tt.Tree)
+		if err != nil {
+			panic(err)
+		}
+		m_c2, err = m_c2.AddParseTree(tt.Name(), tt.Tree)
 		if err != nil {
 			panic(err)
 		}
