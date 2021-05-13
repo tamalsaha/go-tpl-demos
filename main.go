@@ -65,32 +65,40 @@ func main() {
 
 	m_c1 := template.New("")
 	for _, tt := range tpl_c1.Templates() {
-		m_c1, err = m_c1.AddParseTree("c1_"+tt.Name(), tt.Tree)
-		if err != nil {
-			panic(err)
-		}
-		m_c1, err = m_c1.AddParseTree(tt.Name(), tt.Tree)
-		if err != nil {
-			panic(err)
+		if tt.Name() != "" {
+			_, err = m_c1.AddParseTree("c1_"+tt.Name(), tt.Tree) // m_c1
+			if err != nil {
+				panic(err)
+			}
+			_, err = m_c1.AddParseTree(tt.Name(), tt.Tree) // m_c1
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			fmt.Println(tt.Name())
 		}
 	}
-	m_c1, err = m_c1.Parse(content)
+	_, err = m_c1.Parse(content)
 	if err != nil {
 		panic(err)
 	}
 
 	m_c2 := template.New("")
 	for _, tt := range tpl_c2.Templates() {
-		m_c2, err = m_c2.AddParseTree("c2_"+tt.Name(), tt.Tree)
-		if err != nil {
-			panic(err)
-		}
-		m_c2, err = m_c2.AddParseTree(tt.Name(), tt.Tree)
-		if err != nil {
-			panic(err)
+		if tt.Name() != "" {
+			_, err = m_c2.AddParseTree("c2_"+tt.Name(), tt.Tree) // m_c2
+			if err != nil {
+				panic(err)
+			}
+			_, err = m_c2.AddParseTree(tt.Name(), tt.Tree) // m_c2
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			fmt.Println(tt.Name())
 		}
 	}
-	m_c2, err = m_c2.Parse(content)
+	_, err = m_c2.Parse(content)
 	if err != nil {
 		panic(err)
 	}
