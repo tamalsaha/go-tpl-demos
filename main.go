@@ -2,15 +2,34 @@ package main
 
 import (
 	"fmt"
+	"github.com/Masterminds/sprig/v3"
 	"os"
 	"text/template"
 )
 
-var c1 = `
+var (
+	c1 = `
+{{ define "t1" }}
+{{ printf "c1-t1-%v" .A }}
+{{ end }}
 {{ define "t2" }}
-{{ printf "%v" .A }}
+{{ printf "c1-t2-%v" .A }}
 {{ end }}
 `
+	c2 = `
+{{ define "t1" }}
+{{ printf "c2-t1-%v" .A }}
+{{ end }}
+{{ define "t2" }}
+{{ printf "c2-t2-%v" .A }}
+{{ end }}
+`
+	content = `
+{{ range $svc := .O }}
+	{{ template "t2" $svc }}
+{{ end }}
+`
+)
 
 func main() {
 	type Inner struct {
@@ -31,6 +50,40 @@ func main() {
 			},
 		},
 	}
+
+	tpl_c1, err := template.New("").Funcs(sprig.TxtFuncMap()).Parse(c1)
+	if err != nil {
+		panic(err)
+	}
+	tpl_c2, err := template.New("").Funcs(sprig.TxtFuncMap()).Parse(c2)
+	if err != nil {
+		panic(err)
+	}
+
+	m_c1 := template.New("")
+	for _, tt := range tpl_c1.Templates() {
+		m_c1, err = m_c1.AddParseTree("c1_"+tt.Name(), tt.Tree)
+		if err != nil {
+			panic(err)
+		}
+	}
+	m_c1, err = m_c1.Parse(content)
+	if err != nil {
+		panic(err)
+	}
+
+	m_c2 := template.New("")
+	for _, tt := range tpl_c2.Templates() {
+		m_c2, err = m_c2.AddParseTree("c2_"+tt.Name(), tt.Tree)
+		if err != nil {
+			panic(err)
+		}
+	}
+	m_c2, err = m_c2.Parse(content)
+	if err != nil {
+		panic(err)
+	}
+
 	tpl := template.Must(template.New("").Parse(`
 {{ define "t2" }}
 {{ printf "%v" .A }}
@@ -43,7 +96,12 @@ func main() {
 		fmt.Println(tt.Name())
 	}
 
-	err := tpl.Execute(os.Stdout, &na)
+	err = m_c1.Execute(os.Stdout, &na)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("=====================================")
+	err = m_c2.Execute(os.Stdout, &na)
 	if err != nil {
 		panic(err)
 	}
