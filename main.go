@@ -6,6 +6,12 @@ import (
 	"text/template"
 )
 
+var c1 = `
+{{ define "t2" }}
+{{ printf "%v" .A }}
+{{ end }}
+`
+
 func main() {
 	type Inner struct {
 		A string
@@ -37,5 +43,8 @@ func main() {
 		fmt.Println(tt.Name())
 	}
 
-	tpl.Execute(os.Stdout, &na)
+	err := tpl.Execute(os.Stdout, &na)
+	if err != nil {
+		panic(err)
+	}
 }
