@@ -95,18 +95,6 @@ func main() {
 		panic(err)
 	}
 
-	tpl := template.Must(template.New("").Parse(`
-{{ define "t2" }}
-{{ printf "%v" .A }}
-{{ end }}
-{{ range $svc := .O }}
-	{{ template "t2" $svc }}
-{{ end }}
-`))
-	for _, tt := range tpl.Templates() {
-		fmt.Println(tt.Name())
-	}
-
 	err = m_c1.Execute(os.Stdout, &na)
 	if err != nil {
 		panic(err)
