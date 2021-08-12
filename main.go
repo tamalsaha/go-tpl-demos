@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/Masterminds/sprig/v3"
+	"io/ioutil"
 	"os"
+	"reflect"
 	"text/template"
+
+	"github.com/Masterminds/sprig/v3"
+	"gomodules.xyz/encoding/json"
+	"gomodules.xyz/encoding/yaml"
+	"k8s.io/klog/v2"
 )
 
 var (
@@ -31,7 +37,80 @@ var (
 `
 )
 
+type Person struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
 func main() {
+	data, err := ioutil.ReadFile("pod.yaml")
+	if err != nil {
+		klog.Fatalln(err)
+	}
+
+	var obj map[string]interface{}
+	err = yaml.Unmarshal(data, &obj)
+	if err != nil {
+		klog.Fatalln(err)
+	}
+
+	funcs := sprig.TxtFuncMap()
+	funcs["custom_int"] = tplCustomIntFn
+	funcs["custom_str"] = tplCustomStrFn
+	funcs["custom_obj"] = tplCustomObjFn
+	funcs["custom_struct"] = tplCustomStructFn
+
+	// txt := `{{ toRawJson . | custom_obj | toRawJson }}`
+	// txt := `{{ custom_obj . | toRawJson }}`
+	// txt := `{{ custom_int . }}`
+	// txt := `{{ custom_str . }}`
+	txt := `{{ custom_struct . | toRawJson }}`
+	tpl, err := template.New("").Funcs(funcs).Parse(txt)
+	if err != nil {
+		panic(err)
+	}
+	err = tpl.Execute(os.Stdout, obj)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func tplCustomIntFn(data interface{}) (int64, error) {
+	return 1, nil
+}
+
+func tplCustomStrFn(data interface{}) (string, error) {
+	return "abc", nil
+}
+
+func tplCustomObjFn(data interface{}) (interface{}, error) {
+	return toObject(data)
+}
+
+func tplCustomStructFn(data interface{}) (Person, error) {
+	return Person{
+		Name: "John",
+		Age:  30,
+	}, nil
+}
+
+func toObject(data interface{}) (map[string]interface{}, error) {
+	var obj map[string]interface{}
+	if v, ok := data.(map[string]interface{}); ok {
+		obj = v
+	} else if str, ok := data.(string); ok {
+		err := json.Unmarshal([]byte(str), &obj)
+		if err != nil {
+			return nil,  err
+		}
+	} else {
+		return nil, fmt.Errorf("unknown obj type %v", reflect.TypeOf(data).String())
+	}
+	return obj,  nil
+}
+
+
+func main__() {
 	type Inner struct {
 		A string
 	}
